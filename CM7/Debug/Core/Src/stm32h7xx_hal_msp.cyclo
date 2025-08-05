@@ -1,9 +1,0 @@
-../Core/Src/stm32h7xx_hal_msp.c:63:6:HAL_MspInit	1
-../Core/Src/stm32h7xx_hal_msp.c:86:6:HAL_DFSDM_ChannelMspInit	3
-../Core/Src/stm32h7xx_hal_msp.c:121:6:HAL_DFSDM_ChannelMspDeInit	2
-../Core/Src/stm32h7xx_hal_msp.c:144:6:HAL_DSI_MspInit	3
-../Core/Src/stm32h7xx_hal_msp.c:197:6:HAL_DSI_MspDeInit	2
-../Core/Src/stm32h7xx_hal_msp.c:231:6:HAL_LTDC_MspInit	3
-../Core/Src/stm32h7xx_hal_msp.c:272:6:HAL_LTDC_MspDeInit	2
-../Core/Src/stm32h7xx_hal_msp.c:290:6:HAL_SAI_MspInit	7
-../Core/Src/stm32h7xx_hal_msp.c:368:6:HAL_SAI_MspDeInit	5
