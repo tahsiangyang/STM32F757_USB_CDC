@@ -75,11 +75,11 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 extern float32_t testInput_f32_10khz[TEST_LENGTH_SAMPLES];
 static float32_t testOutput[TEST_LENGTH_SAMPLES / 2];
 static float32_t testInput_sine[SAMPLE_RATE];
+static float32_t ad_value[SAMPLE_RATE];
 uint32_t fftSize = 1024;
 uint32_t ifftFlag = 0;
 uint32_t doBitReverse = 1;
 uint32_t refIndex = 213, testIndex = 0;
-uint32_t ad_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -183,23 +183,53 @@ int main(void) {
 
 		/* USER CODE BEGIN 3 */
 
-		HAL_ADC_Start(&hadc1);
-		HAL_Delay(100);
-		ad_value = HAL_ADC_GetValue(&hadc1);
-		HAL_Delay(100);
-		HAL_ADC_Stop(&hadc1);
-		while (1)
-			;
+		HAL_Delay(1000);
+
+		//get analog signal value from PA0_C (RV1) and sent to PC.
+		for (int i = 0; i < SAMPLE_RATE; i++) {
+			HAL_ADC_Start(&hadc1);
+			HAL_Delay(100);
+			ad_value[i] = HAL_ADC_GetValue(&hadc1);
+			HAL_Delay(100);
+			HAL_ADC_Stop(&hadc1);
+			HAL_Delay(100);
+		}
+		for (int i = 0; i < SAMPLE_RATE; i++) {
+			memcpy(raw_bytes, &ad_value[i], sizeof(float32_t));
+			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
+					sizeof(raw_bytes));
+			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+			HAL_Delay(100);
+		}
 
 		HAL_Delay(1000);
 
+		//cal FFT of analog signal value and sent to PC.
+		/* Process the data through the CFFT/CIFFT module */
+		arm_cfft_f32(&arm_cfft_sR_f32_len1024, ad_value, ifftFlag,
+				doBitReverse);
+		/* Process the data through the Complex Magnitude Module for
+		 calculating the magnitude at each bin */
+		arm_cmplx_mag_f32(ad_value, testOutput, fftSize);
+		/* Calculates maxValue and returns corresponding BIN value */
+		arm_max_f32(testOutput, fftSize, &maxValue, &testIndex);
+		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
+			memcpy(raw_bytes, &testOutput[i], sizeof(float32_t));
+			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
+					sizeof(raw_bytes));
+			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+			HAL_Delay(100);
+		}
+
+		HAL_Delay(1000);
+
+		//gen 50hz sine wave and sent to PC.
 		for (int i = 0; i < SAMPLE_RATE; i++) {
 			float32_t angle = 2.0f * PI * FREQ
 					* ((float32_t) i / (float32_t) SAMPLE_RATE);
 			float32_t radians = (PI / 180.0f) * angle;
 			testInput_sine[i] = arm_sin_f32(radians);
 		}
-
 		for (int i = 0; i < SAMPLE_RATE; i++) {
 			memcpy(raw_bytes, &testInput_sine[i], sizeof(float32_t));
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
@@ -210,10 +240,7 @@ int main(void) {
 
 		HAL_Delay(1000);
 
-		for (int i = 0; i < TEST_LENGTH_SAMPLES / 2; i++) {
-			testOutput[i] = 0.0f;
-		}
-
+		//cal FFT of 50hz sine wave and send to PC.
 		/* Process the data through the CFFT/CIFFT module */
 		arm_cfft_f32(&arm_cfft_sR_f32_len1024, testInput_sine, ifftFlag,
 				doBitReverse);
@@ -222,7 +249,6 @@ int main(void) {
 		arm_cmplx_mag_f32(testInput_sine, testOutput, fftSize);
 		/* Calculates maxValue and returns corresponding BIN value */
 		arm_max_f32(testOutput, fftSize, &maxValue, &testIndex);
-
 		//USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*)&UserTxBuffer, sizeof(UserTxBuffer));
 		//USBD_CDC_TransmitPacket(&hUsbDeviceFS);
 		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
@@ -233,9 +259,44 @@ int main(void) {
 			HAL_Delay(100);
 		}
 
+		HAL_Delay(1000);
+
+		//get example data and send to PC.
+		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
+			memcpy(raw_bytes, &testInput_f32_10khz[i], sizeof(float32_t));
+			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
+					sizeof(raw_bytes));
+			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+			HAL_Delay(100);
+		}
+
+		HAL_Delay(1000);
+
+		//cal FFT of example data and send to PC.
+		/* Process the data through the CFFT/CIFFT module */
+		arm_cfft_f32(&arm_cfft_sR_f32_len1024, testInput_f32_10khz, ifftFlag,
+				doBitReverse);
+		/* Process the data through the Complex Magnitude Module for
+		 calculating the magnitude at each bin */
+		arm_cmplx_mag_f32(testInput_f32_10khz, testOutput, fftSize);
+		/* Calculates maxValue and returns corresponding BIN value */
+		arm_max_f32(testOutput, fftSize, &maxValue, &testIndex);
+		//USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*)&UserTxBuffer, sizeof(UserTxBuffer));
+		//USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
+			memcpy(raw_bytes, &testOutput[i], sizeof(float32_t));
+			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
+					sizeof(raw_bytes));
+			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+			HAL_Delay(100);
+		}
+
+		HAL_Delay(1000);
+
 		while (1)
 			;
 
+		//code below is useless.
 		for (int i = 0; i < TEST_LENGTH_SAMPLES / 2; i++) {
 			testOutput[i] = 0.0f;
 		}
@@ -409,14 +470,14 @@ void MX_DFSDM1_Init(void) {
 	hdfsdm1_channel1.Instance = DFSDM1_Channel1;
 	hdfsdm1_channel1.Init.OutputClock.Activation = ENABLE;
 	hdfsdm1_channel1.Init.OutputClock.Selection =
-	DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
+			DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
 	hdfsdm1_channel1.Init.OutputClock.Divider = 2;
 	hdfsdm1_channel1.Init.Input.Multiplexer = DFSDM_CHANNEL_EXTERNAL_INPUTS;
 	hdfsdm1_channel1.Init.Input.DataPacking = DFSDM_CHANNEL_STANDARD_MODE;
 	hdfsdm1_channel1.Init.Input.Pins = DFSDM_CHANNEL_SAME_CHANNEL_PINS;
 	hdfsdm1_channel1.Init.SerialInterface.Type = DFSDM_CHANNEL_SPI_RISING;
 	hdfsdm1_channel1.Init.SerialInterface.SpiClock =
-	DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
+			DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
 	hdfsdm1_channel1.Init.Awd.FilterOrder = DFSDM_CHANNEL_FASTSINC_ORDER;
 	hdfsdm1_channel1.Init.Awd.Oversampling = 1;
 	hdfsdm1_channel1.Init.Offset = 0;
@@ -663,7 +724,7 @@ static void MX_SAI1_Init(void) {
 	hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
 	hsai_BlockA1.Init.TriState = SAI_OUTPUT_NOTRELEASED;
 	if (HAL_SAI_InitProtocol(&hsai_BlockA1, SAI_I2S_STANDARD,
-	SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK) {
+			SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN SAI1_Init 2 */
