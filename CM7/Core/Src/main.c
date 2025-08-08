@@ -191,6 +191,9 @@ int main(void) {
 			HAL_Delay(100);
 			ad_value[i] = HAL_ADC_GetValue(&hadc1);
 			HAL_Delay(100);
+			//normalize -1.0 ~ +1.0
+			ad_value[i] = ad_value[i] - ((float32_t) 65535.0f / 2.0f);
+			ad_value[i] = ad_value[i] / ((float32_t) 65535.0f / 2.0f);
 			HAL_ADC_Stop(&hadc1);
 			HAL_Delay(100);
 		}
