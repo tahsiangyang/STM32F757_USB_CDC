@@ -61,8 +61,8 @@ all: main-build
 main-build: stm32h757_usb_cdc_CM4.elf secondary-outputs
 
 # Tool invocations
-stm32h757_usb_cdc_CM4.elf stm32h757_usb_cdc_CM4.map: $(OBJS) $(USER_OBJS) C:\Users\user\STM32_WORK\stm32h757_usb_cdc\CM4\STM32H757XIHX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32h757_usb_cdc_CM4.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\user\STM32_WORK\stm32h757_usb_cdc\CM4\STM32H757XIHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32h757_usb_cdc_CM4.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+stm32h757_usb_cdc_CM4.elf stm32h757_usb_cdc_CM4.map: $(OBJS) $(USER_OBJS) C:\Users\user\STM32_WORK\STM32F757_USB_CDC\CM4\STM32H757XIHX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32h757_usb_cdc_CM4.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\user\STM32_WORK\STM32F757_USB_CDC\CM4\STM32H757XIHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32h757_usb_cdc_CM4.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

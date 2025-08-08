@@ -64,8 +64,8 @@ all: main-build
 main-build: stm32h757_usb_cdc_CM7.elf secondary-outputs
 
 # Tool invocations
-stm32h757_usb_cdc_CM7.elf stm32h757_usb_cdc_CM7.map: $(OBJS) $(USER_OBJS) C:\Users\user\STM32_WORK\stm32h757_usb_cdc\CM7\STM32H757XIHX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32h757_usb_cdc_CM7.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\user\STM32_WORK\stm32h757_usb_cdc\CM7\STM32H757XIHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32h757_usb_cdc_CM7.map" -Wl,--gc-sections -static -L"C:\Users\user\STM32Cube\Repository\STM32Cube_FW_H7_V1.12.0\Drivers\CMSIS\DSP\Lib\GCC" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+stm32h757_usb_cdc_CM7.elf stm32h757_usb_cdc_CM7.map: $(OBJS) $(USER_OBJS) C:\Users\user\STM32_WORK\STM32F757_USB_CDC\CM7\STM32H757XIHX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32h757_usb_cdc_CM7.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\user\STM32_WORK\STM32F757_USB_CDC\CM7\STM32H757XIHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32h757_usb_cdc_CM7.map" -Wl,--gc-sections -static -L"C:\Users\user\STM32Cube\Repository\STM32Cube_FW_H7_V1.12.0\Drivers\CMSIS\DSP\Lib\GCC" --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
