@@ -3,6 +3,8 @@
 "./Core/Src/arm_cfft_radix8_f32.o"
 "./Core/Src/arm_fft_bin_data.o"
 "./Core/Src/main.o"
+"./Core/Src/stm32h7xx_hal_adc.o"
+"./Core/Src/stm32h7xx_hal_adc_ex.o"
 "./Core/Src/stm32h7xx_hal_msp.o"
 "./Core/Src/stm32h7xx_it.o"
 "./Core/Src/syscalls.o"

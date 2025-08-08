@@ -59,6 +59,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
 
 DFSDM_Channel_HandleTypeDef hdfsdm1_channel1;
 
@@ -78,7 +79,7 @@ uint32_t fftSize = 1024;
 uint32_t ifftFlag = 0;
 uint32_t doBitReverse = 1;
 uint32_t refIndex = 213, testIndex = 0;
-
+uint32_t ad_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,6 +88,7 @@ static void MX_GPIO_Init(void);
 static void MX_DSIHOST_DSI_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_SAI1_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -169,6 +171,7 @@ int main(void) {
 	//MX_LTDC_Init();
 	//MX_SAI1_Init();
 	MX_USB_DEVICE_Init();
+	MX_ADC1_Init();
 	/* USER CODE BEGIN 2 */
 
 	/* USER CODE END 2 */
@@ -179,6 +182,14 @@ int main(void) {
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+
+		HAL_ADC_Start(&hadc1);
+		HAL_Delay(100);
+		ad_value = HAL_ADC_GetValue(&hadc1);
+		HAL_Delay(100);
+		HAL_ADC_Stop(&hadc1);
+		while (1)
+			;
 
 		HAL_Delay(1000);
 
@@ -214,7 +225,7 @@ int main(void) {
 
 		//USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*)&UserTxBuffer, sizeof(UserTxBuffer));
 		//USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-		for (int i = 0; i < SAMPLE_RATE/2; i++) {
+		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
 			memcpy(raw_bytes, &testOutput[i], sizeof(float32_t));
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
@@ -317,6 +328,71 @@ void SystemClock_Config(void) {
 }
 
 /**
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC1_Init(void) {
+
+	/* USER CODE BEGIN ADC1_Init 0 */
+
+	/* USER CODE END ADC1_Init 0 */
+
+	ADC_MultiModeTypeDef multimode = { 0 };
+	ADC_ChannelConfTypeDef sConfig = { 0 };
+
+	/* USER CODE BEGIN ADC1_Init 1 */
+
+	/* USER CODE END ADC1_Init 1 */
+
+	/** Common config
+	 */
+	hadc1.Instance = ADC1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+	hadc1.Init.Resolution = ADC_RESOLUTION_16B;
+	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+	hadc1.Init.LowPowerAutoWait = DISABLE;
+	hadc1.Init.ContinuousConvMode = DISABLE;
+	hadc1.Init.NbrOfConversion = 1;
+	hadc1.Init.DiscontinuousConvMode = DISABLE;
+	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+	hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
+	hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+	hadc1.Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
+	hadc1.Init.OversamplingMode = DISABLE;
+	hadc1.Init.Oversampling.Ratio = 1;
+	if (HAL_ADC_Init(&hadc1) != HAL_OK) {
+		Error_Handler();
+	}
+
+	/** Configure the ADC multi-mode
+	 */
+	multimode.Mode = ADC_MODE_INDEPENDENT;
+	if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK) {
+		Error_Handler();
+	}
+
+	/** Configure Regular Channel
+	 */
+	sConfig.Channel = ADC_CHANNEL_0;
+	sConfig.Rank = ADC_REGULAR_RANK_1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	sConfig.SingleDiff = ADC_SINGLE_ENDED;
+	sConfig.OffsetNumber = ADC_OFFSET_NONE;
+	sConfig.Offset = 0;
+	sConfig.OffsetSignedSaturation = DISABLE;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN ADC1_Init 2 */
+
+	/* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
  * @brief DFSDM1 Initialization Function
  * @param None
  * @retval None
@@ -333,14 +409,14 @@ void MX_DFSDM1_Init(void) {
 	hdfsdm1_channel1.Instance = DFSDM1_Channel1;
 	hdfsdm1_channel1.Init.OutputClock.Activation = ENABLE;
 	hdfsdm1_channel1.Init.OutputClock.Selection =
-			DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
+	DFSDM_CHANNEL_OUTPUT_CLOCK_SYSTEM;
 	hdfsdm1_channel1.Init.OutputClock.Divider = 2;
 	hdfsdm1_channel1.Init.Input.Multiplexer = DFSDM_CHANNEL_EXTERNAL_INPUTS;
 	hdfsdm1_channel1.Init.Input.DataPacking = DFSDM_CHANNEL_STANDARD_MODE;
 	hdfsdm1_channel1.Init.Input.Pins = DFSDM_CHANNEL_SAME_CHANNEL_PINS;
 	hdfsdm1_channel1.Init.SerialInterface.Type = DFSDM_CHANNEL_SPI_RISING;
 	hdfsdm1_channel1.Init.SerialInterface.SpiClock =
-			DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
+	DFSDM_CHANNEL_SPI_CLOCK_INTERNAL;
 	hdfsdm1_channel1.Init.Awd.FilterOrder = DFSDM_CHANNEL_FASTSINC_ORDER;
 	hdfsdm1_channel1.Init.Awd.Oversampling = 1;
 	hdfsdm1_channel1.Init.Offset = 0;
@@ -587,7 +663,7 @@ static void MX_SAI1_Init(void) {
 	hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
 	hsai_BlockA1.Init.TriState = SAI_OUTPUT_NOTRELEASED;
 	if (HAL_SAI_InitProtocol(&hsai_BlockA1, SAI_I2S_STANDARD,
-			SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK) {
+	SAI_PROTOCOL_DATASIZE_16BIT, 2) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN SAI1_Init 2 */
