@@ -183,29 +183,30 @@ int main(void) {
 
 		/* USER CODE BEGIN 3 */
 
-		HAL_Delay(1000);
 
 		//get analog signal value from PA0_C (RV1) and sent to PC.
 		for (int i = 0; i < SAMPLE_RATE; i++) {
 			HAL_ADC_Start(&hadc1);
-			HAL_Delay(100);
+			//HAL_Delay(10);
 			ad_value[i] = HAL_ADC_GetValue(&hadc1);
-			HAL_Delay(100);
+			HAL_ADC_Stop(&hadc1);
+			//HAL_Delay(10);
+		}
+
+		for (int i = 0; i < SAMPLE_RATE; i++) {
 			//normalize -1.0 ~ +1.0
 			ad_value[i] = ad_value[i] - ((float32_t) 65535.0f / 2.0f);
 			ad_value[i] = ad_value[i] / ((float32_t) 65535.0f / 2.0f);
-			HAL_ADC_Stop(&hadc1);
-			HAL_Delay(100);
+
 		}
 		for (int i = 0; i < SAMPLE_RATE; i++) {
 			memcpy(raw_bytes, &ad_value[i], sizeof(float32_t));
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
 		//cal FFT of analog signal value and sent to PC.
 		/* Process the data through the CFFT/CIFFT module */
@@ -221,10 +222,9 @@ int main(void) {
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
 		//gen 50hz sine wave and sent to PC.
 		for (int i = 0; i < SAMPLE_RATE; i++) {
@@ -238,10 +238,9 @@ int main(void) {
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
 		//cal FFT of 50hz sine wave and send to PC.
 		/* Process the data through the CFFT/CIFFT module */
@@ -259,10 +258,9 @@ int main(void) {
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
 		//get example data and send to PC.
 		for (int i = 0; i < SAMPLE_RATE / 2; i++) {
@@ -270,10 +268,9 @@ int main(void) {
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
 		//cal FFT of example data and send to PC.
 		/* Process the data through the CFFT/CIFFT module */
@@ -291,13 +288,11 @@ int main(void) {
 			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, (uint8_t*) &raw_bytes,
 					sizeof(raw_bytes));
 			USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-			HAL_Delay(100);
+			HAL_Delay(10);
 		}
 
-		HAL_Delay(1000);
 
-		while (1)
-			;
+		continue;
 
 		//code below is useless.
 		for (int i = 0; i < TEST_LENGTH_SAMPLES / 2; i++) {
